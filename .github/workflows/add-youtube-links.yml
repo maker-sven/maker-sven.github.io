@@ -1,0 +1,46 @@
+name: Add YouTube Shorts links
+
+on:
+  push:
+    paths:
+      - '.github/workflows/add-youtube-links.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update-homepage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update homepage links
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text()
+
+          old = '<div class="navlinks"><a href="#services">Services</a><a href="short-form-content.html">Short-form content</a><a href="#how">How it works</a>'
+          new = '<div class="navlinks"><a href="#services">Services</a><a href="short-form-content.html">Short-form content</a><a href="youtube-shorts-laten-maken.html">YouTube Shorts</a><a href="#how">How it works</a>'
+          s = s.replace(old, new)
+
+          old = '<div class="mobile-menu" id="mobileMenu"><div class="wrap"><a href="#services" onclick="closeMenu()">Services</a><a href="short-form-content.html" onclick="closeMenu()">Short-form content</a><a href="#how"'
+          new = '<div class="mobile-menu" id="mobileMenu"><div class="wrap"><a href="#services" onclick="closeMenu()">Services</a><a href="short-form-content.html" onclick="closeMenu()">Short-form content</a><a href="youtube-shorts-laten-maken.html" onclick="closeMenu()">YouTube Shorts</a><a href="#how"'
+          s = s.replace(old, new)
+
+          old = '<p style="margin-top:14px"><a href="short-form-content.html" style="color:#c084fc;font-weight:800">Short-form content laten maken →</a></p>'
+          new = '<p style="margin-top:14px"><a href="short-form-content.html" style="color:#c084fc;font-weight:800">Short-form content laten maken →</a> · <a href="youtube-shorts-laten-maken.html" style="color:#c084fc;font-weight:800">YouTube Shorts laten maken →</a></p>'
+          s = s.replace(old, new)
+
+          p.write_text(s)
+          PY
+
+      - name: Commit homepage update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Add YouTube Shorts links to homepage"
+          git push
